@@ -15,7 +15,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
-
+app.use(require('./middleware/cookieParser'));
+app.use(Auth.createSession);
 
 app.get('/',
   (req, res) => {
@@ -79,8 +80,38 @@ app.post('/links',
 /************************************************************/
 
 app.post('/signup', (req, res, next) => {
+
+  // ----- SOLUTION CODE -----
+  // var username = req.body.username;
+  // var password = req.body.password;
+  // return models.Users.get({username})
+  //   .then(user => {
+  //     if (user) {
+  //       console.log('THROWING USER');
+  //       throw user;
+  //     }
+  //     return models.Users.create({username, password});
+  //   })
+  //   .then(results => {
+  //     console.log('RESULTS',results)
+  //     return models.Sessions.update({hash: req.session.hash}, {userId: results.insertId});
+  //   })
+  //   .then(() => {
+  //     res.redirect('/');
+  //   })
+  //   .error(error => {
+  //     res.status(500).send(error);
+  //   })
+  //   .catch(user => {
+  //     console.log("catchING", user);
+  //     res.redirect('/signup');
+  //   });
+  // --------------------------
   return models.Users.create(req.body)
     .then(newUser => {
+      return models.Sessions.update({id: req.session.id}, {userId: newUser.insertId});
+    })
+    .then(result => {
       res.status(201).redirect('/');
     })
     .error(err => {
